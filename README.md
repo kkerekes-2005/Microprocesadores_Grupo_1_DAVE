@@ -12,20 +12,6 @@ Después de un accidente, el conductor no siempre puede pedir ayuda. En D.A.V.E.
 
 Cada nodo tiene las mismas placas: un **MSP-EXP430FR5994** con la **BOOSTXL-EDUMKII** (sensores, LCD, LED RGB, zumbador, pulsadores) y un **LAUNCHXL-CC1310** que hace de módem de radio. MSP430 y CC1310 se comunican por UART.
 
-```
-            NODO TX (coche)                                     NODO RX (central)
-┌──────────────────────────────┐                      ┌──────────────────────────────┐
-│ KXTC9-2050 (ADC)  ┐          │                      │          ┌ LCD 128x128 (SPI) │
-│ TMP006 (I²C)      ├► MSP430  │                      │  MSP430 ─┼ LED RGB (GPIO)    │
-│ S1 on/off, S2 SOS ┘  msp_tx  │                      │  msp_rx  ├ Zumbador (PWM)    │
-│                       │      │                      │    ▲     └ PuTTY (UART A0)   │
-│           UART A3 14 B│      │                      │    │UART A3 16 B             │
-│                       ▼      │   radio 863 MHz      │    │                         │
-│                    CC1310 ───┼──────── 14 B ───────►┼─ CC1310  (+RSSI, +CRC)      │
-│                   cc1310_tx  │   EasyLink, 10 dBm   │  cc1310_rx                   │
-└──────────────────────────────┘                      └──────────────────────────────┘
-```
-
 | Carpeta | Proyecto CCS | Placa | Función |
 |---|---|---|---|
 | [`msp_tx/`](msp_tx) | `Nodo_TX_MSP430_v2` | MSP430FR5994 + EDUMKII (coche) | Lee el acelerómetro cada 10 ms, detecta impactos, gestiona S1 (on/off) y S2 (SOS), monta la trama de 14 bytes y la envía al CC1310. |
