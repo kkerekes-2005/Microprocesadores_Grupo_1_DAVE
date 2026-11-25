@@ -3,7 +3,7 @@
 #include <hal/hal_uart.h>
 
 /* Nodo_Rx:
- *   eUSCI_A3, P6.1 = UCA3RXD  <- CC1310 (recepci髇 por interrupci髇, buffer circular)
+ *   eUSCI_A3, P6.1 = UCA3RXD  <- CC1310 (recepci贸n por interrupci贸n, buffer circular)
  *   eUSCI_A0, P2.0 = UCA0TXD  -> PC / PuTTY (backchannel USB de la LaunchPad)
  */
 
@@ -11,12 +11,12 @@
 #define RX_MASK     (RX_BUF_LEN - 1u)
 
 static volatile uint8_t  rx_buf[RX_BUF_LEN];
-static volatile uint8_t  rx_head = 0;       // posici髇 donde escribe la ISR
-static volatile uint8_t  rx_tail = 0;       // posici髇 donde lee el main
+static volatile uint8_t  rx_head = 0;       // posici贸n donde escribe la ISR
+static volatile uint8_t  rx_tail = 0;       // posici贸n donde lee el main
 static volatile uint16_t rx_overflow = 0;   // bytes perdidos por buffer lleno
 
 
-// Mismos par醡etros para las dos UART: 115200 8N1 con SMCLK = 16 MHz
+// Mismos par谩metros para las dos UART: 115200 8N1 con SMCLK = 16 MHz
 static void uart_115200(uint16_t base)
 {
     EUSCI_A_UART_initParam cfg = {0};
@@ -30,20 +30,20 @@ static void uart_115200(uint16_t base)
     cfg.uartMode          = EUSCI_A_UART_MODE;
     cfg.overSampling      = EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION;
 
-    EUSCI_A_UART_init(base, &cfg);          // configurar (m骴ulo en reset)
+    EUSCI_A_UART_init(base, &cfg);          // configurar (m贸dulo en reset)
     EUSCI_A_UART_enable(base);              // sacar de reset
 }
 
 
 void HAL_UART_init_gpio(void)
 {
-    // P6.1 = UCA3RXD (funci髇 primaria): entrada desde el TX del CC1310
+    // P6.1 = UCA3RXD (funci贸n primaria): entrada desde el TX del CC1310
     GPIO_setAsPeripheralModuleFunctionInputPin(
             GPIO_PORT_P6,
             GPIO_PIN1,
             GPIO_PRIMARY_MODULE_FUNCTION);
 
-    // P2.0 = UCA0TXD, P2.1 = UCA0RXD (funci髇 secundaria): backchannel USB hacia el PC
+    // P2.0 = UCA0TXD, P2.1 = UCA0RXD (funci贸n secundaria): backchannel USB hacia el PC
     GPIO_setAsPeripheralModuleFunctionOutputPin(
             GPIO_PORT_P2,
             GPIO_PIN0,
@@ -57,12 +57,12 @@ void HAL_UART_init_gpio(void)
 
 void HAL_UART_config(void)
 {
-    // CC1310 -> MSP430: recepci髇 por interrupci髇
+    // CC1310 -> MSP430: recepci贸n por interrupci贸n
     uart_115200(EUSCI_A3_BASE);
     EUSCI_A_UART_clearInterrupt(EUSCI_A3_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
     EUSCI_A_UART_enableInterrupt(EUSCI_A3_BASE, EUSCI_A_UART_RECEIVE_INTERRUPT);
 
-    // MSP430 -> PC: solo transmisi髇, sin interrupciones
+    // MSP430 -> PC: solo transmisi贸n, sin interrupciones
     uart_115200(EUSCI_A0_BASE);
 }
 

@@ -21,9 +21,9 @@
 #include <hal/hal_pwm.h>
 #include <hal/hal_i2c.h>
 
-// ================== ConfiguraciÛn ===================
-#define TICK_HZ         100u           // muestreo del acelerÛmetro (10ms)
-#define TICKS_TRAMA     (1u * TICK_HZ) //trama perioÛdica cada 1s
+// ================== Configuraci√≥n ===================
+#define TICK_HZ         100u           // muestreo del aceler√≥metro (10ms)
+#define TICKS_TRAMA     (1u * TICK_HZ) //trama peri√≥dica cada 1s
 #define HOLDOFF_EVENTO  (2u * TICK_HZ) //2s sin repetir aviso de impacto
 #define T_ALARMA        (3u * TICK_HZ) //LED rojo 3s
 #define T_PITIDO        (TICK_HZ / 4)  // pitido de 250ms
@@ -31,13 +31,13 @@
 
 #define UMBRAL_IMPACTO_MG   1800    //hay q calibrarlo y justificarlo en la memoria
 #define UMBRAL_M2           ((int32_t)UMBRAL_IMPACTO_MG * UMBRAL_IMPACTO_MG)
-#define UMBRAL_TEMP_CC      4500    //45,00 ∫C
-#define HISTERESIS_CC 200 // 2,00 ∫C .> se desactiva por debajo de 43,00 ∫C
+#define UMBRAL_TEMP_CC      4500    //45,00 ¬∫C
+#define HISTERESIS_CC 200 // 2,00 ¬∫C .> se desactiva por debajo de 43,00 ¬∫C
 
 /* =============== Estructura de la TRAMA (igual q en nodoRx) ========================0
-    [0] cabecera 0xA5    [1] ID coche    [2] tipo (1 perioÛdica, 2 evento)
+    [0] cabecera 0xA5    [1] ID coche    [2] tipo (1 peri√≥dica, 2 evento)
     [3] secuencia        [4-5] ax mg    [6-7] ay mg     [8-9] az mg  (int16, little-endian)
-    [10-11] temp en centesimas de ∫C (int16, little endian)
+    [10-11] temp en centesimas de ¬∫C (int16, little endian)
     [12] flags: bit0 impacto, bit1 temp alta, bit2 SOS, bit3 error sensor T
     [13] CRC-8 (polinomiio 0x07) de los bytes 0...12 (13 bytes total)
 */
@@ -58,7 +58,7 @@ typedef struct {
 } muestra_t;
 
 
-// ========== DECLARACI”N FUNCIONES ==================
+// ========== DECLARACI√ìN FUNCIONES ==================
 static void Clocks_init(void);
 void TimerA_init(void);
 static void tarea_tick(void);
@@ -94,7 +94,7 @@ static void Clocks_init(void)
     CS_initClockSignal(CS_MCLK,  CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1); // 16MHz
     CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1); // 16MHz
 
-    // ACLK desde el cristal de 32768Hz  (ya q el VLO varÌa mucho entre las dos placas Tx y Rx)
+    // ACLK desde el cristal de 32768Hz  (ya q el VLO var√≠a mucho entre las dos placas Tx y Rx)
     CS_setExternalClockSource(32768, 0);
     if (CS_turnOnLFXTWithTimeout(CS_LFXT_DRIVE_3, 1000000)) {
         CS_initClockSignal(CS_ACLK, CS_LFXTCLK_SELECT, CS_CLOCK_DIVIDER_1);
@@ -108,7 +108,7 @@ static void Clocks_init(void)
 
 
 // ===================== FUNCIONES PARA LA TRAMA ====================
-// FunciÛn de cambio de tipo de dato (para el output del acelerometro)
+// Funci√≥n de cambio de tipo de dato (para el output del acelerometro)
 static int16_t accel_a_mg(float g) {
     float mg = g * 1000.0f;
     if (mg > 32767.0f) mg = 32767.0f;
@@ -117,7 +117,7 @@ static int16_t accel_a_mg(float g) {
 }
 
 
-// FunciÛn de correciÛn de errores
+// Funci√≥n de correci√≥n de errores
 static uint8_t crc8(const uint8_t *d, uint8_t n) {
     uint8_t crc = 0x00;
     uint8_t i;
@@ -131,15 +131,15 @@ static uint8_t crc8(const uint8_t *d, uint8_t n) {
 }
 
 
-// FunciÛn para pasar a little endian
+// Funci√≥n para pasar a little endian
 static void put_i16(uint8_t *p, int16_t v) {
     p[0] = (uint8_t)v;
     p[1] = (uint8_t)((uint16_t)v >> 8);
 }
 
 
-// Temperatura de la pastilla en centÈsimas de ∫C (2450 = 24,50 ∫C).
-// Devuelve false si el sensor no responde (asÌ no se manda un valor falso).
+// Temperatura de la pastilla en cent√©simas de ¬∫C (2450 = 24,50 ¬∫C).
+// Devuelve false si el sensor no responde (as√≠ no se manda un valor falso).
 static bool temp_leer_cc(int16_t *t_cc)
 {
     *t_cc = 2450;
@@ -147,7 +147,7 @@ static bool temp_leer_cc(int16_t *t_cc)
 }
 
 
-// FUnciÛn para enviar la trama
+// FUnci√≥n para enviar la trama
 static uint8_t enviar_trama(const muestra_t *p, uint8_t flags, bool evento) {
     static bool temp_alta_antes = false;
     int16_t temp_cc = 0;
@@ -190,7 +190,7 @@ static void tarea_tick(void) {
     static bool temp_alta = false;
     static bool s1_antes = false, s2_antes = false;
 
-    // 1. Botones: flanco de pulsaciÛn y los lee cada 10ms (es el antirrebotre)
+    // 1. Botones: flanco de pulsaci√≥n y los lee cada 10ms (es el antirrebotre)
     bool s1 = !SWITCH_get_edumkii_S1();
     bool s2 = !SWITCH_get_edumkii_S2();
     bool sos = s2 && !s2_antes && sistemaOn;
@@ -211,7 +211,7 @@ static void tarea_tick(void) {
     if (t_pitido && --t_pitido == 0) buzzer_off();
 
     if (sistemaOn) {
-        // 3. AcelerÛmetro lo lee
+        // 3. Aceler√≥metro lo lee
         muestra_t m;
         float gx = KXTC9_get_accel_x();
         float gy = KXTC9_get_accel_y();
@@ -266,7 +266,7 @@ static void led_actualizar(uint16_t t_alarma, uint16_t t_destello, bool temp_alt
 }
 
 
-static void buzzer_on(void) { //MODIFICARLA PARA Q QUEDE M¡S GUAY
+static void buzzer_on(void) { //MODIFICARLA PARA Q QUEDE M√ÅS GUAY
     BUZ_sound_on();
 }
 
@@ -369,9 +369,9 @@ void main(void)
                                                GPIO_PRIMARY_MODULE_FUNCTION);  // pines del cristal
 
     PMM_unlockLPM5();
-    Clocks_init();              // despuÈs del unlock: el cristal necesita sus pines activos
+    Clocks_init();              // despu√©s del unlock: el cristal necesita sus pines activos
 
-    // PerifÈricos (despuÈs del unlock y de fijar los relojes)
+    // Perif√©ricos (despu√©s del unlock y de fijar los relojes)
     HAL_UART_config();
     HAL_LCD_config();
     HAL_ADC_config();

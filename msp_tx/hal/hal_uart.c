@@ -2,11 +2,11 @@
 #include <driverlib.h>
 #include <hal/hal_uart.h>
 
-/* UART hacia el CC1310, SOLO TRANSMISI覰: eUSCI_A3, P6.0 = UCA3TXD */
+/* UART hacia el CC1310, SOLO TRANSMISI脫N: eUSCI_A3, P6.0 = UCA3TXD */
 
 void HAL_UART_init_gpio(void)
 {
-    // P6.0 = UCA3TXD (funci髇 PRIMARIA). Llamar ANTES de PMM_unlockLPM5().
+    // P6.0 = UCA3TXD (funci贸n PRIMARIA). Llamar ANTES de PMM_unlockLPM5().
     GPIO_setAsPeripheralModuleFunctionOutputPin(
             GPIO_PORT_P6,
             GPIO_PIN0,
@@ -26,9 +26,9 @@ void HAL_UART_config(void)
     uartConfig.uartMode          = EUSCI_A_UART_MODE;
     uartConfig.overSampling      = EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION;
 
-    EUSCI_A_UART_init(EUSCI_A3_BASE, &uartConfig);     // configurar (m骴ulo en reset)
+    EUSCI_A_UART_init(EUSCI_A3_BASE, &uartConfig);     // configurar (m贸dulo en reset)
     EUSCI_A_UART_enable(EUSCI_A3_BASE);                // sacar de reset
-    // Sin interrupci髇 de recepci髇: este nodo solo transmite
+    // Sin interrupci贸n de recepci贸n: este nodo solo transmite
 }
 
 void HAL_UART_tx_byte(uint8_t txByte)

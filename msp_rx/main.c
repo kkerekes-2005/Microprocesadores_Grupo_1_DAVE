@@ -19,16 +19,16 @@
 
 // ================== Configuracion ===================
 #define TICK_HZ            100u              // tick de 10 ms
-#define T_SIN_SENAL        (3u * TICK_HZ)    // 3 s sin tramas válidas -> enlace perdido
+#define T_SIN_SENAL        (3u * TICK_HZ)    // 3 s sin tramas vÃ¡lidas -> enlace perdido
 #define T_DESTELLO         (TICK_HZ / 10)    // destello azul 100 ms por trama recibida
 #define T_SIRENA           (10u * TICK_HZ)   // la sirena suena como mucho 10 s
 #define T_SIRENA_SEMI      (TICK_HZ / 4)     // 250 ms encendida / 250 ms apagada
 #define T_PARPADEO         (TICK_HZ / 2)     // periodo del parpadeo rojo: 500 ms
 
 #define UMBRAL_IMPACTO_MG  1800              // mismo criterio que Nodo_Tx
-#define UMBRAL_TEMP_CC     4500              // 45,00 ºC
+#define UMBRAL_TEMP_CC     4500              // 45,00 ÂºC
 
-// Estimación de distancia por RSSI (modelo log-distancia)
+// EstimaciÃ³n de distancia por RSSI (modelo log-distancia)
 //   d = D_REF * 10^((RSSI_REF - RSSI) / (10 * n))
 // CALIBRAR: medir el RSSI con el coche a D_REF_M metros y ponerlo en RSSI_REF_DBM
 #define RSSI_REF_DBM       (-40)             // RSSI medido a D_REF_M
@@ -36,13 +36,13 @@
 #define N_PROPAG           2.5f              // 2 = espacio libre; 2.5-3.5 en interiores
 
 /* =============== Trama de radio (igual que en Nodo_Tx) ===============
-    [0] cabecera 0xA5    [1] ID coche    [2] tipo (1 periódica, 2 evento)
+    [0] cabecera 0xA5    [1] ID coche    [2] tipo (1 periÃ³dica, 2 evento)
     [3] secuencia        [4-5] ax mg    [6-7] ay mg     [8-9] az mg  (int16, little-endian)
-    [10-11] temp en centésimas de ºC (int16, little-endian)
+    [10-11] temp en centÃ©simas de ÂºC (int16, little-endian)
     [12] flags: bit0 impacto, bit1 temp alta, bit2 SOS, bit3 error sensor T
     [13] CRC-8 (polinomio 0x07) de los bytes 0..12
 
-   Por UART, Radio_Rx añade:
+   Por UART, Radio_Rx aÃ±ade:
     [14] RSSI en dBm (int8)
     [15] CRC-8 de los bytes 0..14 (protege el salto UART, incluido el RSSI)
 */
@@ -70,7 +70,7 @@ typedef struct {
     int8_t  rssi;
 } trama_t;
 
-// Ordenadas por prioridad: una alarma más grave sustituye a una menos grave
+// Ordenadas por prioridad: una alarma mÃ¡s grave sustituye a una menos grave
 typedef enum {
     ALARMA_NINGUNA = 0,
     ALARMA_INCENDIO,
@@ -79,7 +79,7 @@ typedef enum {
 } alarma_t;
 
 
-// ========== DECLARACIÓN FUNCIONES ==================
+// ========== DECLARACIÃ“N FUNCIONES ==================
 static void Clocks_init(void);
 void TimerA_init(void);
 static void tarea_tick(void);
@@ -105,7 +105,7 @@ volatile bool flagTick = false;
 static uint16_t aclk_hz = 32768;
 
 static bool     enlace_ok   = false;
-static bool     primera     = true;        // aún no ha llegado ninguna trama
+static bool     primera     = true;        // aÃºn no ha llegado ninguna trama
 static uint8_t  ult_seq     = 0;
 static uint16_t perdidas    = 0;           // tramas perdidas (huecos en la secuencia)
 static uint16_t errores     = 0;           // tramas con CRC incorrecto
@@ -113,7 +113,7 @@ static uint16_t t_sin_senal = 0;
 static uint16_t t_destello  = 0;
 static uint16_t t_sirena    = 0;
 static alarma_t alarma      = ALARMA_NINGUNA;
-static uint16_t dist_dm     = 0;           // distancia estimada en decímetros
+static uint16_t dist_dm     = 0;           // distancia estimada en decÃ­metros
 
 Graphics_Context g_sContext;
 
@@ -126,7 +126,7 @@ static void Clocks_init(void)
     CS_initClockSignal(CS_MCLK,  CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
     CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
 
-    // ACLK desde el cristal de 32768 Hz (el VLO varía mucho entre placas)
+    // ACLK desde el cristal de 32768 Hz (el VLO varÃ­a mucho entre placas)
     CS_setExternalClockSource(32768, 0);
     if (CS_turnOnLFXTWithTimeout(CS_LFXT_DRIVE_3, 1000000)) {
         CS_initClockSignal(CS_ACLK, CS_LFXTCLK_SELECT, CS_CLOCK_DIVIDER_1);
@@ -140,7 +140,7 @@ static void Clocks_init(void)
 
 
 // ===================== UTILIDADES DE TRAMA ====================
-// CRC-8, polinomio 0x07: idéntica a la de Nodo_Tx (detección de errores)
+// CRC-8, polinomio 0x07: idÃ©ntica a la de Nodo_Tx (detecciÃ³n de errores)
 static uint8_t crc8(const uint8_t *d, uint8_t n)
 {
     uint8_t crc = 0x00;
@@ -153,13 +153,13 @@ static uint8_t crc8(const uint8_t *d, uint8_t n)
     return crc;
 }
 
-// Inversa de put_i16 de Nodo_Tx: little-endian explícito
+// Inversa de put_i16 de Nodo_Tx: little-endian explÃ­cito
 static int16_t get_i16(const uint8_t *p)
 {
     return (int16_t)((uint16_t)p[0] | ((uint16_t)p[1] << 8));
 }
 
-// Modelo log-distancia: cuanto más cae el RSSI respecto a la referencia, más lejos
+// Modelo log-distancia: cuanto mÃ¡s cae el RSSI respecto a la referencia, mÃ¡s lejos
 static uint16_t estimar_distancia_dm(int8_t rssi)
 {
     float d = D_REF_M * powf(10.0f, (float)(RSSI_REF_DBM - rssi) / (10.0f * N_PROPAG));
@@ -168,7 +168,7 @@ static uint16_t estimar_distancia_dm(int8_t rssi)
 }
 
 
-// ===================== RECEPCIÓN ====================
+// ===================== RECEPCIÃ“N ====================
 // Monta la trama byte a byte; si el CRC falla, se resincroniza en la siguiente cabecera
 static void rx_byte(uint8_t b)
 {
@@ -220,7 +220,7 @@ static void procesar_trama(const uint8_t *r)
     t.flags   = r[12];
     t.rssi    = (int8_t)r[OFF_RSSI];
 
-    // 2. Tramas perdidas: huecos en el número de secuencia
+    // 2. Tramas perdidas: huecos en el nÃºmero de secuencia
     if (!primera) {
         uint8_t salto = (uint8_t)(t.seq - ult_seq);
         if (salto > 1 && salto < 50)        // salto enorme = el coche se ha reiniciado
@@ -238,11 +238,11 @@ static void procesar_trama(const uint8_t *r)
         pc_str("Enlace con el coche establecido\r\n");
     }
 
-    // 4. Magnitud de la aceleración: amag = sqrt(ax^2 + ay^2 + az^2)
+    // 4. Magnitud de la aceleraciÃ³n: amag = sqrt(ax^2 + ay^2 + az^2)
     uint16_t amag = (uint16_t)sqrtf((float)t.ax * t.ax + (float)t.ay * t.ay +
                                     (float)t.az * t.az);
 
-    // 5. Detección de incidencias
+    // 5. DetecciÃ³n de incidencias
     alarma_t nueva = ALARMA_NINGUNA;
     bool fuego = !(t.flags & FLAG_TEMP_ERR) &&
                  ((t.temp_cc > UMBRAL_TEMP_CC) || (t.flags & FLAG_TEMP_ALTA));
@@ -259,7 +259,7 @@ static void procesar_trama(const uint8_t *r)
             t.temp_cc / 100, abs(t.temp_cc % 100), t.rssi);
     pc_str(l);
 
-    // 7. Nueva alarma (una más grave sustituye a la que haya sin atender)
+    // 7. Nueva alarma (una mÃ¡s grave sustituye a la que haya sin atender)
     if (nueva > alarma) {
         alarma   = nueva;
         dist_dm  = estimar_distancia_dm(t.rssi);    // la distancia solo se calcula si hay alarma
@@ -285,7 +285,7 @@ static void tarea_tick(void)
     static bool     buzz_on    = false;
     static uint16_t t_parpadeo = 0;
 
-    // 1. S1: el operador atiende la alarma (flanco de pulsación)
+    // 1. S1: el operador atiende la alarma (flanco de pulsaciÃ³n)
     bool s1 = SWITCH_get_edumkii_S1();
     if (s1 && !s1_antes && alarma != ALARMA_NINGUNA) {
         alarma   = ALARMA_NINGUNA;
@@ -295,7 +295,7 @@ static void tarea_tick(void)
     }
     s1_antes = s1;
 
-    // 2. Enlace: si pasan T_SIN_SENAL sin tramas válidas, se da por perdido
+    // 2. Enlace: si pasan T_SIN_SENAL sin tramas vÃ¡lidas, se da por perdido
     if (t_sin_senal < T_SIN_SENAL) {
         t_sin_senal++;
         if (t_sin_senal == T_SIN_SENAL && enlace_ok) {
@@ -319,7 +319,7 @@ static void tarea_tick(void)
     t_parpadeo = (t_parpadeo + 1) % T_PARPADEO;
 
     if (alarma != ALARMA_NINGUNA) LED_set_rgb(t_parpadeo < T_PARPADEO / 2, 0, 0); // rojo parpadeando
-    else if (!enlace_ok)          LED_set_rgb(1, 1, 0);   // amarillo: sin señal
+    else if (!enlace_ok)          LED_set_rgb(1, 1, 0);   // amarillo: sin seÃ±al
     else if (t_destello)          LED_set_rgb(0, 0, 1);   // azul: trama recibida
     else                          LED_set_rgb(0, 1, 0);   // verde: enlace OK
 }
@@ -468,9 +468,9 @@ void main(void)
                                                GPIO_PRIMARY_MODULE_FUNCTION);  // pines del cristal
 
     PMM_unlockLPM5();
-    Clocks_init();              // después del unlock: el cristal necesita sus pines activos
+    Clocks_init();              // despuÃ©s del unlock: el cristal necesita sus pines activos
 
-    // Periféricos (después del unlock y de fijar los relojes)
+    // PerifÃ©ricos (despuÃ©s del unlock y de fijar los relojes)
     HAL_UART_config();
     HAL_LCD_config();
     HAL_DIGOUT_config();

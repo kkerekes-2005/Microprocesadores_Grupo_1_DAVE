@@ -2,7 +2,7 @@
 
 Proyecto final de **Microprocesadores** (Grupo 1). Sistema de alerta de accidentes con dos nodos comunicados por radio Sub-1 GHz.
 
-Después de un accidente, el conductor no siempre puede pedir ayuda. En D.A.V.E. el **coche avisa solo**: el nodo transmisor mide aceleraciones y temperatura y las envía por radio a una **central** (por ejemplo, la de una aseguradora). La central detecta accidentes, posibles incendios o peticiones de SOS, da la alarma y estima a qué distancia está el coche a partir del RSSI de la señal.
+Después de un accidente, el conductor no siempre puede pedir ayuda. En D.A.V.E. el coche avisa solo: el nodo transmisor mide aceleraciones y temperatura y las envía por radio a una central (por ejemplo, la de una aseguradora). La central detecta accidentes, posibles incendios o peticiones de SOS, da la alarma y estima a qué distancia está el coche a partir del RSSI de la señal.
 
 **Autores:** Jesús Bandrés, Ana Carolina Casares, Ainhoa Gibaja, Kinga Kerekes y Nicolás Ros.
 
@@ -11,20 +11,6 @@ Después de un accidente, el conductor no siempre puede pedir ayuda. En D.A.V.E.
 ## 1. Arquitectura
 
 Cada nodo tiene las mismas placas: un **MSP-EXP430FR5994** con la **BOOSTXL-EDUMKII** (sensores, LCD, LED RGB, zumbador, pulsadores) y un **LAUNCHXL-CC1310** que hace de módem de radio. MSP430 y CC1310 se comunican por UART.
-
-```
-            NODO TX (coche)                                     NODO RX (central)
-┌──────────────────────────────┐                      ┌──────────────────────────────┐
-│ KXTC9-2050 (ADC)  ┐          │                      │          ┌ LCD 128x128 (SPI) │
-│ TMP006 (I²C)      ├► MSP430  │                      │  MSP430 ─┼ LED RGB (GPIO)    │
-│ S1 on/off, S2 SOS ┘  msp_tx  │                      │  msp_rx  ├ Zumbador (PWM)    │
-│                       │      │                      │    ▲     └ PuTTY (UART A0)   │
-│           UART A3 14 B│      │                      │    │UART A3 16 B             │
-│                       ▼      │   radio 863 MHz      │    │                         │
-│                    CC1310 ───┼──────── 14 B ───────►┼─ CC1310  (+RSSI, +CRC)      │
-│                   cc1310_tx  │   EasyLink, 10 dBm   │  cc1310_rx                   │
-└──────────────────────────────┘                      └──────────────────────────────┘
-```
 
 | Carpeta | Proyecto CCS | Placa | Función |
 |---|---|---|---|
