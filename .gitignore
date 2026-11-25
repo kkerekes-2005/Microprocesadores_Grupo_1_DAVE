@@ -1,9 +1,22 @@
+# Salidas de compilación de CCS
 Debug/
 Release/
-.launches/
-.settings/
 *.out
 *.map
 *.obj
 *.d
 *.pp
+*.hex
+*_linkInfo.xml
+
+# Ficheros locales de CCS / Eclipse (dependen de cada ordenador)
+.launches/
+.settings/
+.metadata/
+.jxbrowser-data/
+RemoteSystemsTempFiles/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
