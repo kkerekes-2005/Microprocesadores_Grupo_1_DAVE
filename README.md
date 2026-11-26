@@ -58,7 +58,7 @@ Cada nodo tiene las mismas placas: un **MSP-EXP430FR5994** con la **BOOSTXL-EDUM
   2. **SOS manual:** flag SOS.
   3. **Posible incendio:** temperatura > 45 °C (solo en el flanco).
 - Con una alarma nueva estima la distancia con el modelo log-distancia
-  `d = d0 · 10^((RSSI(d0) − RSSI) / (10·n))`, activa la sirena (pitidos de 250 ms durante 10 s como máximo) y muestra el aviso en el LCD. **S1** da la alarma por atendida.
+  `d = d0 · 10^((RSSI(d0) − RSSI) / (10·n))`, activa la sirena (pitidos de 250 ms durante 10 s como máximo) y muestra el aviso en el LCD. S1 da la alarma por atendida.
 
 ---
 
@@ -78,7 +78,7 @@ Trama del coche (14 bytes) — MSP430 Tx → CC1310 Tx → radio → CC1310 Rx
 | 6–7 | ay | `int16` | mg |
 | 8–9 | az | `int16` | mg |
 | 10–11 | Temperatura | `int16` | centésimas de °C |
-| 12 | Flags | `uint8` | bit0 impacto · bit1 temperatura alta · bit2 SOS · bit3 error del sensor de temperatura |
+| 12 | Flags | `uint8` | bit0 impacto + bit1 temperatura alta + bit2 SOS + bit3 error del sensor de temperatura |
 | 13 | CRC-8 | `uint8` | bytes 0–12 |
 
 **Ampliación en el tramo CC1310 Rx → MSP430 Rx (16 bytes)**
@@ -88,7 +88,7 @@ Trama del coche (14 bytes) — MSP430 Tx → CC1310 Tx → radio → CC1310 Rx
 | 14 | RSSI | `int8` | dBm, medido por el CC1310 receptor |
 | 15 | CRC-8 UART | `uint8` | bytes 0–14 (cubre también el RSSI) |
 
-> Cualquier cambio en el formato de la trama hay que hacerlo a la vez en los cuatro proyectos.
+Como la trama es única, cualquier cambio en su formato hay que hacerlo a la vez en los cuatro proyectos.
 
 ---
 
@@ -104,7 +104,7 @@ En el LAUNCHXL-CC1310 hay que quitar los jumpers RXD y TXD y conectar los cables
 | P6.1 / UCA3RXD (J1 pin 3) | ← | DIO3 (TXD) |
 | GND | ↔ | GND |
 
-En el coche solo se usa TX del MSP430 (P6.0 → DIO2) y en la central solo RX (DIO3 → P6.1); el GND siempre es obligatorio. UART a 115 200 baudios, 8N1.
+En los dos nodos se conectan los tres cables (TX, RX y GND). El programa de cada nodo solo usa un sentido: en el coche, el MSP430 envía (P6.0 → DIO2), en la central, el MSP430 recibe (DIO3 → P6.1). El otro cable queda conectado pero sin uso. El GND común es obligatorio. UART a 115 200 baudios, en formato 8N1.
 
 ### Periféricos utilizados
 
@@ -128,10 +128,8 @@ Software: Code Composer Studio 10.3 (compilador TI 20.2.4.LTS), SDK del curso `m
 
 1. Clonar el repositorio.
 2. En CCS: Project → Import CCS Projects…, seleccionar la carpeta del repositorio e importar los cuatro proyectos.
-3. Comprobar que `FREQ_HZ` es la misma en `cc1310_tx` y `cc1310_rx` (863 MHz) y que `MODO_DIAG = 2` en `cc1310_tx`.
-4. Compilar cada proyecto y cargarlo en su placa con Debug; después, Terminate. El programa queda grabado y arranca solo al alimentar la placa.
-
-Orden recomendado de arranque: CC1310 Rx → MSP430 Rx → CC1310 Tx → MSP430 Tx. Si no se respeta, el sistema se resincroniza solo con la cabecera de la siguiente trama.
+3. Comprobar que `FREQ_HZ` es la misma en `cc1310_tx` y `cc1310_rx` (863 MHz) y que `MODO_DIAG = 2` en `cc1310_tex`.
+4. Compilar cada proyecto y cargarlo en su placa con Debug. Después, Terminate. El programa queda grabado y arranca solo al alimentar la placa.
 
 ### Calibración
 
